@@ -1,4 +1,5 @@
 import os
+import sys
 import mido
 from mido import MidiFile
 
@@ -74,4 +75,6 @@ def midi_to_parts(midi_file_path, output_dir):
 # 示例使用
 midi_path = 'sirius.mid'
 output_directory = 'output'
+if len(sys.argv) > 1:
+    midi_path = sys.argv[1]
 midi_to_parts(midi_path, output_directory)

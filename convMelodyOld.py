@@ -2,7 +2,6 @@
 # int melody1[] = {262, 262, 392, 392, 440, 440, 392, 349, 349, 330, 330, 294, 294, 262};
 # int durations1[] = {500, 500, 500, 500, 500, 500, 1000, 500, 500, 500, 500, 500, 500, 1000};
 # Python脚本用于将输入转换成这两个数组一样的输出
-import sys
 
 def note_to_frequency(note):
     """将音符转换为相应的频率。"""
@@ -51,23 +50,28 @@ def read_melody_from_file(file_path):
     with open(file_path, 'r') as file:
         return file.readline().strip()
 
-# 输入示例, 默认5个轨道
-num_melodies = 5
-# 命令行参数输入轨道数量
-if len(sys.argv) > 1:
-    num_melodies = sys.argv[1]
-input_melodies = [read_melody_from_file(f'melody{i + 1}.txt') for i in range(num_melodies)]
+# 输入示例
+input_melody1 = read_melody_from_file('melody1.txt')
+input_melody2 = read_melody_from_file('melody2.txt')
+input_melody3 = read_melody_from_file('melody3.txt')
+input_melody4 = read_melody_from_file('melody4.txt')
+input_melody5 = read_melody_from_file('melody5.txt')
 
 # 解析旋律
-frequencies_list = [parse_melody(input_melody)[0] for input_melody in input_melodies]
-durations_list = [parse_melody(input_melody)[1] for input_melody in input_melodies]
+frequencies1, durations1 = parse_melody(input_melody1)
+frequencies2, durations2 = parse_melody(input_melody2)
+frequencies3, durations3 = parse_melody(input_melody3)
+frequencies4, durations4 = parse_melody(input_melody4)
+frequencies5, durations5 = parse_melody(input_melody5)
 
-# 写入txt并打印输出，以便可以直接在Arduino代码中使用
-with open("melodyArrays.txt", 'w') as f:
-    for i in range(len(frequencies_list)):
-        frequencies_array_str = f"int melody{i}[] = " + str(frequencies_list[i]).replace('[', '{').replace(']', '}') + ';'
-        durations_array_str = f"int durations1[] = " + str(durations_list[i]).replace('[', '{').replace(']', '}') + ';'
-        print(frequencies_array_str)
-        print(durations_array_str)
-        f.write(frequencies_array_str + '\n')
-        f.write(durations_array_str + '\n')
+# 打印输出，以便可以直接在Arduino代码中使用
+print("int melody1[] = " + str(frequencies1).replace('[', '{').replace(']', '}') + ';')
+print("int durations1[] = " + str(durations1).replace('[', '{').replace(']', '}') + ';')
+print("int melody2[] = " + str(frequencies2).replace('[', '{').replace(']', '}') + ';')
+print("int durations2[] = " + str(durations2).replace('[', '{').replace(']', '}') + ';')
+print("int melody3[] = " + str(frequencies3).replace('[', '{').replace(']', '}') + ';')
+print("int durations3[] = " + str(durations3).replace('[', '{').replace(']', '}') + ';')
+print("int melody4[] = " + str(frequencies4).replace('[', '{').replace(']', '}') + ';')
+print("int durations4[] = " + str(durations4).replace('[', '{').replace(']', '}') + ';')
+print("int melody5[] = " + str(frequencies5).replace('[', '{').replace(']', '}') + ';')
+print("int durations5[] = " + str(durations5).replace('[', '{').replace(']', '}') + ';')
