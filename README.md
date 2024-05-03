@@ -7,13 +7,17 @@
 - 命令行参数为 midi 文件目录
 - 结果保存在 ./output
 ### convMelody.py 将 txt 文件转换为项目中所用到的数组文件
-- 命令行参数为轨道数，默认为5
+- 命令行参数
+  - **-tracks** 轨道数，默认为5
+  - **-bpm** MIDI 的 BPM，默认为110
 - 结果保存在 melodyArrays.txt
 ### 使用方法
+#### Linux
 ```bash
 pip install mido
 python MIDI2TXT.py sirius.mid
-python convMelody.py 5
+# 将需要的 track 内的所有 txt 拷贝到和 convMelody.py 同一目录
+python convMelody.py -tracks 5 -bpm 110
 ```
 ## Arduino
 - SiriusNoShinzou.ino 为 Arduino 项目代码文件

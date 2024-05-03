@@ -63,8 +63,6 @@ def process_track(track, track_index, output_dir, ticks_per_beat):
                     f.write(f"{note}-{int(duration * 4)}")
                 if idx < len(seq) - 1:
                     f.write(", ")
-            # 去掉文件最后的", "
-            remove_last_two_chars(f"melody{i+1}.txt")
 
 def midi_to_parts(midi_file_path, output_dir):
     """将 MIDI 文件转换为多个不重叠的音符序列并保存在文本文件中。"""
@@ -72,9 +70,12 @@ def midi_to_parts(midi_file_path, output_dir):
     for i, track in enumerate(mid.tracks):
         process_track(track, i, output_dir, mid.ticks_per_beat)
 
-# 示例使用
-midi_path = 'sirius.mid'
-output_directory = 'output'
-if len(sys.argv) > 1:
-    midi_path = sys.argv[1]
-midi_to_parts(midi_path, output_directory)
+def main():
+    midi_path = 'sirius.mid'
+    output_directory = 'output'
+    if len(sys.argv) > 1:
+        midi_path = sys.argv[1]
+    midi_to_parts(midi_path, output_directory)
+
+if __name__ == "__main__":
+    main()

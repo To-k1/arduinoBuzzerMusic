@@ -3,6 +3,7 @@
 # int durations1[] = {500, 500, 500, 500, 500, 500, 1000, 500, 500, 500, 500, 500, 500, 1000};
 # Python脚本用于将输入转换成这两个数组一样的输出
 import sys
+import argparse
 
 def note_to_frequency(note):
     """将音符转换为相应的频率。"""
@@ -20,7 +21,7 @@ def note_to_frequency(note):
     }
     return frequencies.get(note, 0)  # 如果音符不在字典中，默认返回0（休止符）
 
-def parse_melody(input_string):
+def parse_melody(input_string, bpm):
     """解析旋律字符串并返回频率和持续时间数组。"""
     notes = input_string.split(',')
     frequencies = []
@@ -28,7 +29,6 @@ def parse_melody(input_string):
     durations = [0]
 
     # 最小的时间单位(四分之一拍的时间)
-    bpm = 110
     clock_cycle = 60 / bpm * 1000 / 4
     print(clock_cycle)
     
@@ -51,23 +51,31 @@ def read_melody_from_file(file_path):
     with open(file_path, 'r') as file:
         return file.readline().strip()
 
-# 输入示例, 默认5个轨道
-num_melodies = 5
-# 命令行参数输入轨道数量
-if len(sys.argv) > 1:
-    num_melodies = sys.argv[1]
-input_melodies = [read_melody_from_file(f'melody{i + 1}.txt') for i in range(num_melodies)]
+def main():
+    # 创建 ArgumentParser 对象
+    parser = argparse.ArgumentParser(description="Process some integers.")
+    # 添加 bpm 参数，类型为整数，设置默认值为 110
+    parser.add_argument('-bpm', type=int, default=110, help='Beats per minute')
+    # 添加 tracks 参数，类型为整数，设置默认值为 5
+    parser.add_argument('-tracks', type=int, default=5, help='Number of tracks')
+    # 解析命令行参数
+    args = parser.parse_args()
 
-# 解析旋律
-frequencies_list = [parse_melody(input_melody)[0] for input_melody in input_melodies]
-durations_list = [parse_melody(input_melody)[1] for input_melody in input_melodies]
+    input_melodies = [read_melody_from_file(f'melody{i + 1}.txt') for i in range(args.tracks)]
 
-# 写入txt并打印输出，以便可以直接在Arduino代码中使用
-with open("melodyArrays.txt", 'w') as f:
-    for i in range(len(frequencies_list)):
-        frequencies_array_str = f"int melody{i}[] = " + str(frequencies_list[i]).replace('[', '{').replace(']', '}') + ';'
-        durations_array_str = f"int durations1[] = " + str(durations_list[i]).replace('[', '{').replace(']', '}') + ';'
-        print(frequencies_array_str)
-        print(durations_array_str)
-        f.write(frequencies_array_str + '\n')
-        f.write(durations_array_str + '\n')
+    # 解析旋律
+    frequencies_list = [parse_melody(input_melody, args.bpm)[0] for input_melody in input_melodies]
+    durations_list = [parse_melody(input_melody, args.bpm)[1] for input_melody in input_melodies]
+
+    # 写入txt并打印输出，以便可以直接在Arduino代码中使用
+    with open("melodyArrays.txt", 'w') as f:
+        for i in range(len(frequencies_list)):
+            frequencies_array_str = f"int melody{i}[] = " + str(frequencies_list[i]).replace('[', '{').replace(']', '}') + ';'
+            durations_array_str = f"int durations1[] = " + str(durations_list[i]).replace('[', '{').replace(']', '}') + ';'
+            print(frequencies_array_str)
+            print(durations_array_str)
+            f.write(frequencies_array_str + '\n')
+            f.write(durations_array_str + '\n')
+
+if __name__ == "__main__":
+    main()
