@@ -70,8 +70,8 @@ def main():
     # 写入txt并打印输出，以便可以直接在Arduino代码中使用
     with open("melodyArrays.txt", 'w') as f:
         for i in range(len(frequencies_list)):
-            frequencies_array_str = f"int melody{i}[] = " + str(frequencies_list[i]).replace('[', '{').replace(']', '}') + ';'
-            durations_array_str = f"int durations1[] = " + str(durations_list[i]).replace('[', '{').replace(']', '}') + ';'
+            frequencies_array_str = f"int melody{i + 1}[] = " + str(frequencies_list[i]).replace('[', '{').replace(']', '}') + ';'
+            durations_array_str = f"int durations{i + 1}[] = " + str(durations_list[i]).replace('[', '{').replace(']', '}') + ';'
             print(frequencies_array_str)
             print(durations_array_str)
             f.write(frequencies_array_str + '\n')
