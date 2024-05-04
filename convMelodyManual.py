@@ -27,18 +27,22 @@ def parse_melody(input_string, bpm):
     frequencies = []
     # 未知理由durations读取会错开一位，所以手动错开一位
     durations = [0]
+
+    # 最小的时间单位(四分之一拍的时间)
+    clock_cycle = 60 / bpm * 1000 / 4
+    print(clock_cycle)
     
     for note_duration in notes:
         if '-' in note_duration:
             note, duration = note_duration.split('-')
             freq = note_to_frequency(note.strip())
             frequencies.append(freq)
-            durations.append(int(int(duration.strip())))
+            durations.append(int(int(duration.strip()) * clock_cycle))
         else:
             # 处理休止符
             duration = note_duration.strip()
             frequencies.append(0)  # 休止符的频率设置为0
-            durations.append(int(int(duration)))
+            durations.append(int(int(duration) * clock_cycle))
     
     return frequencies, durations
 

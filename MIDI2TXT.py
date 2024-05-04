@@ -1,5 +1,6 @@
 import os
 import sys
+import argparse
 import mido
 from mido import MidiFile
 
@@ -22,47 +23,58 @@ def midi_note_to_name(note):
     return f"{notes[note % 12]}{octave}"
 
 def process_track(track, track_index, output_dir, ticks_per_beat):
-    """处理单个MIDI轨道，并将输出写入确保没有音符重叠的多个文本文件中。"""
-    events = []
-    active_notes = {}
-    time = 0
-    last_event_end_time = 0  # 记录最后一个事件的结束时间
+    # 存储所有音符的开始和结束时间
+    note_events = []
 
+    # 第一步：遍历所有音符，收集开始和结束时间
+    time = 0
+    active_notes = {}
     for msg in track:
         time += msg.time
         if msg.type == 'note_on' and msg.velocity > 0:
-            # 如果这是首个事件且时间已经推进，记录初始休止符
-            if not events and time > 0:
-                events.append((0, time / ticks_per_beat, 'Rest'))  # 添加开头的休止符
-            active_notes[msg.note] = time
+            if msg.note not in active_notes:
+                active_notes[msg.note] = time
         elif (msg.type == 'note_off' or (msg.type == 'note_on' and msg.velocity == 0)) and msg.note in active_notes:
             start_time = active_notes.pop(msg.note)
-            duration = (time - start_time) / ticks_per_beat
-            events.append((start_time, duration, midi_note_to_name(msg.note)))
-            last_event_end_time = time
+            duration = time - start_time
+            note_events.append((start_time, duration, msg.note))
 
-    # 分配事件到不同的序列以避免重叠
-    sequences = [[]]
-    for start, duration, note in sorted(events, key=lambda x: x[0]):
-        for seq in sequences:
-            if not seq or seq[-1][0] + seq[-1][1] * ticks_per_beat <= start:
-                seq.append((start, duration, note))
+    # 第二步：按开始时间排序音符事件
+    note_events.sort()
+
+    # 第三步：分配音符到不同的组以避免重叠
+    sequences = []
+    last_end_times = []
+
+    for start, duration, note in note_events:
+        placed = False
+        note_name = midi_note_to_name(note)
+        for i, seq in enumerate(sequences):
+            if last_end_times[i] <= start:
+                seq.append((start, duration, note_name))
+                last_end_times[i] = start + duration
+                placed = True
                 break
-        else:
-            sequences.append([(start, duration, note)])
+        if not placed:
+            sequences.append([(start, duration, note_name)])
+            last_end_times.append(start + duration)
 
-    # 写入文件
+    # 第四步：为每个序列生成txt文件并插入休止符
     track_folder = os.path.join(output_dir, f"Track_{track_index}")
     os.makedirs(track_folder, exist_ok=True)
     for i, seq in enumerate(sequences):
         with open(os.path.join(track_folder, f"melody{i+1}.txt"), 'w') as f:
-            for idx, (start, duration, note) in enumerate(seq):
-                if note == 'Rest':
-                    f.write(f"{int(duration * 4)}")
-                else:
-                    f.write(f"{note}-{int(duration * 4)}")
-                if idx < len(seq) - 1:
-                    f.write(", ")
+            last_end = 0
+            for start, duration, note_name in seq:
+                # 插入休止符
+                if start > last_end:
+                    f.write(f"{tick2ms(start - last_end, ticks_per_beat)}, ")
+                f.write(f"{note_name}-{tick2ms(duration, ticks_per_beat)}, ")
+                last_end = start + duration
+            # 移除最后一个逗号
+            f.seek(0, os.SEEK_END)
+            f.seek(f.tell() - 2, os.SEEK_SET)
+            f.truncate()
 
 def midi_to_parts(midi_file_path, output_dir):
     """将 MIDI 文件转换为多个不重叠的音符序列并保存在文本文件中。"""
@@ -70,12 +82,19 @@ def midi_to_parts(midi_file_path, output_dir):
     for i, track in enumerate(mid.tracks):
         process_track(track, i, output_dir, mid.ticks_per_beat)
 
-def main():
-    midi_path = 'sirius.mid'
-    output_directory = 'output'
-    if len(sys.argv) > 1:
-        midi_path = sys.argv[1]
-    midi_to_parts(midi_path, output_directory)
+def tick2ms(ticks, ticks_per_beat):
+    """将 tick 数转换成 ms 。"""
+    milliseconds = (ticks / ticks_per_beat) * (60000 / args.bpm)
+    return round(milliseconds)
 
-if __name__ == "__main__":
-    main()
+# 创建 ArgumentParser 对象
+parser = argparse.ArgumentParser(description="Process some integers.")
+# 添加 bpm 参数，类型为整数，设置默认值为 110
+parser.add_argument('-bpm', type=int, default=110, help='Beats per minute')
+# 添加 path 参数，类型为字符串，设置默认值为 'sirius.mid'
+parser.add_argument('-path', type=str, default='sirius.mid', help='Input path')
+# 解析命令行参数
+args = parser.parse_args()
+output_directory = 'output'
+midi_to_parts(args.path, output_directory)
+
