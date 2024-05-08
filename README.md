@@ -17,7 +17,7 @@
 #### Linux
 ```bash
 pip install mido
-python MIDI2TXT.py -path sirius.mid -bpm 110
+python MIDI2TXT.py -path sirius.mid -bpm 110 -octave 2
 # 将需要的 track 内的所有 txt 拷贝到和 convMelody.py 同一目录
 python convMelody.py -tracks 5 -bpm 110
 ```

@@ -17,9 +17,9 @@ def remove_last_two_chars(file_path):
         file.write(modified_content)
 
 def midi_note_to_name(note):
-    """将 MIDI 音符编号转换为音符名称，并提高一个八度。"""
+    """将 MIDI 音符编号转换为音符名称，并提高参数中数量的八度。"""
     notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-    octave = (note // 12) - 1 + 1  # 提高一个八度
+    octave = (note // 12) - 1 + args.octave  # 提高八度
     return f"{notes[note % 12]}{octave}"
 
 def process_track(track, track_index, output_dir, ticks_per_beat):
@@ -93,6 +93,8 @@ parser = argparse.ArgumentParser(description="Process some integers.")
 parser.add_argument('-bpm', type=int, default=110, help='Beats per minute')
 # 添加 path 参数，类型为字符串，设置默认值为 'sirius.mid'
 parser.add_argument('-path', type=str, default='sirius.mid', help='Input path')
+# 添加 octave 参数，类型为整数，设置默认值为 1 表示上升一个八度(适用于 zave 0905 2300 ± 500 频率小蜂鸣器, 大型 2300 ± 300, 另一个小型是 2800 ± 300)
+parser.add_argument('-octave', type=int, default=1, help='How many octaves are you gonna raise')
 # 解析命令行参数
 args = parser.parse_args()
 output_directory = 'output'
